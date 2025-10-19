@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная Карта Стратегического Маркетинга | Динара Убаева</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony (Neutrals with Deep Teal/Blue Accents) -->
+    <!-- Application Structure Plan: A user-centric dashboard design. It starts with the core "Chaos vs. System" problem, introduces an interactive process flow as the main navigation (Audit -> Foundation -> Lead Gen -> Conversion -> Retention), a dynamic content area that updates on click, a KPI dashboard to visualize results, and a final CTA. This structure guides the user from problem to solution to tangible results, making the complex information digestible and explorable rather than a linear presentation. It prioritizes user discovery over a rigid, report-like flow. -->
+    <!-- Visualization & Content Choices: 
+        1. Problem/Solution Intro -> Goal: Inform -> Method: 2-column Tailwind layout with icons -> Interaction: None -> Justification: Immediately establishes the core value proposition.
+        2. Main Process -> Goal: Organize/Navigate -> Method: Interactive flowchart with HTML/CSS -> Interaction: Clickable stages that update content and highlight state -> Justification: Creates an intuitive mental map of the entire strategy.
+        3. Detailed Content -> Goal: Detail -> Method: Dynamic JS text blocks -> Interaction: Updates based on flowchart selection -> Justification: Progressive disclosure prevents information overload.
+        4. KPI Visualization -> Goal: Compare/Quantify -> Method: Chart.js Bar & Doughnut charts -> Interaction: Filters to display explanations for each KPI -> Justification: Makes abstract metrics concrete and demonstrates value visually.
+        5. CTA -> Goal: Convert -> Method: Styled button -> Interaction: Click -> Justification: Clear final step for the user.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #3d4752;
+        }
+        .brand-teal { color: #008080; }
+        .bg-brand-teal { background-color: #008080; }
+        .border-brand-teal { border-color: #008080; }
+        .stage-item {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .stage-item.active {
+            background-color: #008080;
+            color: #ffffff;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 128, 128, 0.2), 0 4px 6px -2px rgba(0, 128, 128, 0.1);
+        }
+        .stage-item:not(.active):hover {
+            background-color: #e6f2f2;
+            transform: translateY(-3px);
+        }
+        .kpi-btn {
+            transition: all 0.2s ease;
+        }
+        .kpi-btn.active {
+            background-color: #3d4752;
+            color: #ffffff;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
+
+        <header class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold brand-teal mb-2">Интерактивная Карта Стратегического Маркетинга</h1>
+            <p class="text-lg text-gray-600">Системный подход к росту от Динары Убаевой</p>
+        </header>
+
+        <main>
+            <section id="intro" class="mb-16 bg-white p-8 rounded-xl shadow-sm">
+                <h2 class="text-2xl font-bold text-center mb-6">От хаоса инструментов к управляемому росту</h2>
+                <p class="text-center max-w-3xl mx-auto text-gray-600 mb-8">Многие компании инвестируют в маркетинг бессистемно. Это приводит к "сгоревшим" бюджетам, неэффективной воронке продаж и точечным, не связанным между собой решениям. Стратегия соединяет маркетинг, продажи, внутренние процессы и финансы в единый, управляемый механизм, нацеленный на результат.</p>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="border-2 border-red-200 bg-red-50 p-6 rounded-lg">
+                        <h3 class="font-bold text-xl mb-3 text-red-700 flex items-center">
+                            <span class="text-2xl mr-3">🌪️</span> Хаос: Путь потерь
+                        </h3>
+                        <ul class="space-y-2 list-inside text-gray-700">
+                            <li><span class="font-semibold text-red-600">-</span> Бюджеты тратятся без четкой отдачи</li>
+                            <li><span class="font-semibold text-red-600">-</span> "Дырявая" воронка продаж</li>
+                            <li><span class="font-semibold text-red-600">-</span> Отсутствие связи между маркетингом и продажами</li>
+                            <li><span class="font-semibold text-red-600">-</span> Решения принимаются интуитивно</li>
+                            <li><span class="font-semibold text-red-600">-</span> Владелец бизнеса погружен в операционку</li>
+                        </ul>
+                    </div>
+                    <div class="border-2 border-green-200 bg-green-50 p-6 rounded-lg">
+                        <h3 class="font-bold text-xl mb-3 text-green-700 flex items-center">
+                            <span class="text-2xl mr-3">⚙️</span> Система: Путь роста
+                        </h3>
+                        <ul class="space-y-2 list-inside text-gray-700">
+                            <li><span class="font-semibold text-green-600">+</span> Прозрачные KPI и измеримый ROMI</li>
+                            <li><span class="font-semibold text-green-600">+</span> Управляемая и прогнозируемая лидогенерация</li>
+                            <li><span class="font-semibold text-green-600">+</span> Единый контур маркетинга и продаж</li>
+                            <li><span class="font-semibold text-green-600">+</span> Решения на основе данных и аналитики</li>
+                            <li><span class="font-semibold text-green-600">+</span> Масштабирование бизнеса, а не хаоса</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="journey" class="mb-12">
+                 <h2 class="text-2xl font-bold text-center mb-8">Этапы Построения Стратегии</h2>
+                 <p class="text-center max-w-3xl mx-auto text-gray-600 mb-10">Это не просто набор действий, а последовательный маршрут, где каждый этап создает основу для следующего. Нажмите на любой этап, чтобы увидеть ключевые детали и активности, которые он в себя включает. Это поможет понять, как из отдельных элементов складывается целостная и эффективная система.</p>
+                <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4">
+                    <div id="stage-audit" class="stage-item active bg-white p-4 rounded-lg shadow-md w-full md:w-auto text-center border-b-4 border-brand-teal">
+                        <div class="text-sm font-bold">ЭТАП 1</div>
+                        <div class="text-lg font-semibold">Аудит</div>
+                    </div>
+                    <div class="text-2xl brand-teal hidden md:block">&rarr;</div>
+                    <div id="stage-foundation" class="stage-item bg-white p-4 rounded-lg shadow-md w-full md:w-auto text-center border-b-4 border-gray-200">
+                        <div class="text-sm font-bold">ЭТАП 2</div>
+                        <div class="text-lg font-semibold">Фундамент</div>
+                    </div>
+                    <div class="text-2xl brand-teal hidden md:block">&rarr;</div>
+                    <div id="stage-leadgen" class="stage-item bg-white p-4 rounded-lg shadow-md w-full md:w-auto text-center border-b-4 border-gray-200">
+                        <div class="text-sm font-bold">ЭТАП 3</div>
+                        <div class="text-lg font-semibold">Лидогенерация</div>
+                    </div>
+                    <div class="text-2xl brand-teal hidden md:block">&rarr;</div>
+                    <div id="stage-conversion" class="stage-item bg-white p-4 rounded-lg shadow-md w-full md:w-auto text-center border-b-4 border-gray-200">
+                        <div class="text-sm font-bold">ЭТАП 4</div>
+                        <div class="text-lg font-semibold">Конверсия</div>
+                    </div>
+                    <div class="text-2xl brand-teal hidden md:block">&rarr;</div>
+                    <div id="stage-retention" class="stage-item bg-white p-4 rounded-lg shadow-md w-full md:w-auto text-center border-b-4 border-gray-200">
+                        <div class="text-sm font-bold">ЭТАП 5</div>
+                        <div class="text-lg font-semibold">Retention (LTV)</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="details" class="bg-white p-8 rounded-xl shadow-sm min-h-[300px] mb-16">
+                <div id="details-content">
+                </div>
+            </section>
+
+            <section id="kpi" class="mb-16">
+                <h2 class="text-2xl font-bold text-center mb-6">Результат: Прозрачная Система Метрик</h2>
+                <p class="text-center max-w-3xl mx-auto text-gray-600 mb-10">Цель стратегии — перевести маркетинг на язык цифр. Вместо догадок вы получаете дашборд с ключевыми показателями эффективности (KPI), которые показывают реальное влияние маркетинга на бизнес. Интерактивные фильтры ниже помогут вам понять, что означает каждая метрика и как они связаны между собой.</p>
+                <div class="text-center mb-8">
+                    <button data-kpi="ROMI" class="kpi-btn active bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full mr-2 mb-2">ROMI</button>
+                    <button data-kpi="LTV" class="kpi-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full mr-2 mb-2">LTV</button>
+                    <button data-kpi="CAC" class="kpi-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full mr-2 mb-2">CAC</button>
+                    <button data-kpi="CPL" class="kpi-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full mr-2 mb-2">CPL</button>
+                    <button data-kpi="CTR" class="kpi-btn bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-full mb-2">CTR</button>
+                </div>
+                <div id="kpi-explanation" class="text-center max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-sm mb-10">
+                    <h3 id="kpi-title" class="text-xl font-bold brand-teal mb-2"></h3>
+                    <p id="kpi-text"></p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h3 class="text-xl font-bold text-center mb-4">Рост ключевых показателей</h3>
+                        <div class="chart-container">
+                            <canvas id="kpiComparisonChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <h3 class="text-xl font-bold text-center mb-4">Структура возврата инвестиций (ROMI)</h3>
+                        <div class="chart-container">
+                             <canvas id="romiChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="cta" class="bg-brand-teal text-white text-center p-10 rounded-xl shadow-lg">
+                <h2 class="text-3xl font-bold mb-4">Готовы построить стратегию, которая работает?</h2>
+                <p class="text-lg max-w-2xl mx-auto mb-8">Забронируйте диагностику: я покажу, где ваш бизнес теряет деньги и как развернуть вектор на управляемый рост.</p>
+                <button class="bg-white text-brand-teal font-bold py-3 px-8 rounded-full text-lg hover:bg-gray-100 transition duration-300 shadow-md">Записаться на диагностику</button>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const stageData = {
+            audit: {
+                title: 'ЭТАП 1: Глубокий Аудит Бизнеса',
+                content: `
+                    <p class="mb-6 text-gray-600">На этом этапе мы проводим полную ревизию текущего состояния бизнеса, чтобы найти "узкие" места и точки роста. Это не поверхностный анализ, а погружение в 6 ключевых областей, которые напрямую влияют на доход.</p>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
+                        <div class="bg-gray-50 p-4 rounded-lg"><strong>1. Целевая аудитория:</strong> Анализ сегментов, интервью (JTBD), проверка гипотез.</div>
+                        <div class="bg-gray-50 p-4 rounded-lg"><strong>2. Оргструктура и процессы:</strong> Как устроены взаимодействия отделов.</div>
+                        <div class="bg-gray-50 p-4 rounded-lg"><strong>3. Продажи:</strong> Воронка, скрипты, KPI отдела продаж.</div>
+                        <div class="bg-gray-50 p-4 rounded-lg"><strong>4. Маркетинг:</strong> Каналы, аналитика, эффективность текущих инструментов.</div>
+                        <div class="bg-gray-50 p-4 rounded-lg"><strong>5. Финансы:</strong> Юнит-экономика, ценообразование, рентабельность.</div>
+                        <div class="bg-gray-50 p-4 rounded-lg"><strong>6. Бренд:</strong> Позиционирование, коммуникационная стратегия.</div>
+                    </div>`
+            },
+            foundation: {
+                title: 'ЭТАП 2: Построение Фундамента',
+                content: `
+                    <p class="mb-6 text-gray-600">На основе данных аудита мы строим прочный фундамент, который станет основой для всех маркетинговых активностей. Пропуск этого этапа — причина провала большинства кампаний.</p>
+                    <ul class="space-y-3 list-disc list-inside">
+                        <li><strong>Сильное позиционирование:</strong> Четкий и понятный ответ на вопрос "Почему клиенты должны выбрать именно вас?".</li>
+                        <li><strong>Продуктовая матрица:</strong> Разработка линейки продуктов (lead magnet, tripwire, core offer), которая ведет клиента к покупке.</li>
+                        <li><strong>Юнит-экономика:</strong> Расчет и оптимизация экономики одного клиента для обеспечения прибыльности.</li>
+                        <li><strong>Customer Journey Map (CJM):</strong> Карта пути клиента для понимания всех точек контакта и улучшения опыта взаимодействия.</li>
+                    </ul>`
+            },
+            leadgen: {
+                title: 'ЭТАП 3: Система Лидогенерации',
+                content: `
+                    <p class="mb-6 text-gray-600">С прочным фундаментом мы готовы к привлечению целевого трафика. Мы выстраиваем систему, которая генерирует качественные лиды, а не просто клики.</p>
+                    <ul class="space-y-3 list-disc list-inside">
+                        <li><strong>Выбор и тестирование каналов:</strong> Определяем наиболее эффективные каналы для привлечения ЦА (контекст, таргет, SEO, контент-маркетинг и т.д.).</li>
+                        <li><strong>Контент-стратегия:</strong> Создание полезного и вовлекающего контента, который решает проблемы аудитории и формирует доверие к бренду.</li>
+                        <li><strong>Воронки привлечения:</strong> Проектирование автоматизированных воронок, которые "прогревают" аудиторию и превращают холодный трафик в заинтересованных лидов.</li>
+                    </ul>`
+            },
+            conversion: {
+                title: 'ЭТАП 4: Оптимизация Конверсии',
+                content: `
+                    <p class="mb-6 text-gray-600">Привлечь лида — это только полдела. Главное — превратить его в клиента. На этом этапе мы работаем над повышением эффективности каждого шага воронки.</p>
+                     <ul class="space-y-3 list-disc list-inside">
+                        <li><strong>Работа с посадочными страницами:</strong> A/B тестирование, улучшение юзабилити и офферов для повышения конверсии в заявку.</li>
+                        <li><strong>Автоматизация и CRM:</strong> Внедрение систем, которые помогают не терять лиды и эффективно вести их по воронке.</li>
+                        <li><strong>Связка маркетинга и продаж:</strong> Построение бесшовного процесса передачи лидов от маркетинга к отделу продаж с четкими регламентами (SLA).</li>
+                    </ul>`
+            },
+            retention: {
+                title: 'ЭТАП 5: Удержание и Рост LTV',
+                content: `
+                    <p class="mb-6 text-gray-600">Самые прибыльные клиенты — постоянные. Работа над удержанием и повторными продажами напрямую влияет на пожизненную ценность клиента (LTV) и общую прибыльность бизнеса.</p>
+                     <ul class="space-y-3 list-disc list-inside">
+                        <li><strong>Программы лояльности:</strong> Разработка систем, которые мотивируют клиентов возвращаться снова и снова.</li>
+                        <li><strong>Email-маркетинг и мессенджеры:</strong> Построение коммуникации с текущей базой для допродаж и повышения вовлеченности.</li>
+                        <li><strong>Сбор обратной связи (NPS):</strong> Регулярный сбор и анализ обратной связи для улучшения продукта и сервиса, что напрямую влияет на удержание.</li>
+                    </ul>`
+            }
+        };
+
+        const kpiData = {
+            ROMI: {
+                title: 'ROMI (Return on Marketing Investment)',
+                text: 'Ключевой показатель, который демонстрирует окупаемость инвестиций в маркетинг. Он отвечает на главный вопрос: "Сколько денег приносит каждый вложенный в маркетинг рубль?". Высокий ROMI означает, что ваша стратегия эффективна.'
+            },
+            LTV: {
+                title: 'LTV (Lifetime Value)',
+                text: 'Пожизненная ценность клиента. Это общая прибыль, которую компания получает от одного клиента за все время сотрудничества. Цель стратегии — максимизировать этот показатель за счет удержания и повторных продаж.'
+            },
+            CAC: {
+                title: 'CAC (Customer Acquisition Cost)',
+                text: 'Стоимость привлечения одного клиента. Эта метрика показывает, сколько денег вы тратите на маркетинг и продажи, чтобы получить одного нового покупателя. Важно, чтобы LTV был значительно выше CAC (LTV > 3xCAC).'
+            },
+            CPL: {
+                title: 'CPL (Cost Per Lead)',
+                text: 'Стоимость одного лида (потенциального клиента). Эта метрика помогает оценить эффективность конкретных каналов привлечения трафика. Чем ниже CPL при сохранении качества лидов, тем лучше.'
+            },
+            CTR: {
+                title: 'CTR (Click-Through Rate)',
+                text: 'Показатель кликабельности. Он показывает отношение числа кликов по объявлению или ссылке к числу показов. Высокий CTR говорит о том, что ваше предложение релевантно и интересно аудитории.'
+            }
+        };
+
+        const detailsContent = document.getElementById('details-content');
+        const stageItems = document.querySelectorAll('.stage-item');
+
+        function updateDetails(stageId) {
+            const data = stageData[stageId];
+            detailsContent.innerHTML = `
+                <h3 class="text-2xl font-bold mb-4 text-center brand-teal">${data.title}</h3>
+                ${data.content}
+            `;
+            stageItems.forEach(item => {
+                item.classList.remove('active', 'border-brand-teal');
+                item.classList.add('border-gray-200');
+                if (item.id === `stage-${stageId}`) {
+                    item.classList.add('active', 'border-brand-teal');
+                    item.classList.remove('border-gray-200');
+                }
+            });
+        }
+
+        stageItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const stageId = item.id.split('-')[1];
+                updateDetails(stageId);
+            });
+        });
+
+        const kpiBtns = document.querySelectorAll('.kpi-btn');
+        const kpiTitleEl = document.getElementById('kpi-title');
+        const kpiTextEl = document.getElementById('kpi-text');
+
+        function updateKpiInfo(kpiKey) {
+            const data = kpiData[kpiKey];
+            kpiTitleEl.textContent = data.title;
+            kpiTextEl.textContent = data.text;
+
+            kpiBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.kpi === kpiKey) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        kpiBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                updateKpiInfo(btn.dataset.kpi);
+            });
+        });
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDetails('audit');
+            updateKpiInfo('ROMI');
+
+            const ctxComparison = document.getElementById('kpiComparisonChart').getContext('2d');
+            new Chart(ctxComparison, {
+                type: 'bar',
+                data: {
+                    labels: ['Конверсия сайта', 'LTV', 'Стоимость лида (CPL)'],
+                    datasets: [{
+                        label: 'До стратегии',
+                        data: [1.5, 10000, 1500],
+                        backgroundColor: 'rgba(252, 165, 165, 0.7)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'После стратегии',
+                        data: [4.5, 35000, 800],
+                        backgroundColor: 'rgba(110, 231, 183, 0.7)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    },
+                    plugins: {
+                        tooltip: {
+                             callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        if(context.label === 'Конверсия сайта'){
+                                            label += context.parsed.y + '%';
+                                        } else {
+                                            label += new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB', minimumFractionDigits: 0 }).format(context.parsed.y);
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctxRomi = document.getElementById('romiChart').getContext('2d');
+            new Chart(ctxRomi, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Прибыль от новых клиентов', 'Прибыль от повторных продаж (LTV)', 'Экономия на CAC'],
+                    datasets: [{
+                        data: [45, 40, 15],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(245, 158, 11, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>
